@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thumbnail Maker - AI-Powered Professional Thumbnails</title>
+  <meta name="description" content="Generate and edit high-quality YouTube and social media thumbnails using artificial intelligence, custom reference images, and styling presets.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,700;0,900;1,400&family=Outfit:wght@300;400;600;800&family=Bangers&family=Permanent+Marker&family=Press+Start+2P&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  
+  <!-- Navigation Header -->
+  <header class="app-header">
+    <div class="header-logo">
+      <div class="logo-icon-container">
+        <i data-lucide="sparkles" class="logo-icon"></i>
+      </div>
+      <h1>Thumbnail<span>Maker</span></h1>
+    </div>
+    
+    <div class="header-controls">
+      <!-- Status Badge -->
+      <div class="status-badge" id="statusBadge">
+        <span class="status-dot"></span>
+        <span class="status-text">AI Engine Ready</span>
+      </div>
+      
+      <!-- Theme Switcher -->
+      <button class="theme-toggle" id="themeToggleBtn" aria-label="Toggle Theme">
+        <i data-lucide="sun" class="sun-icon"></i>
+        <i data-lucide="moon" class="moon-icon"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Tab Bar (Visible only on mobile/tablet) -->
+  <nav class="mobile-tabs" id="mobileTabs">
+    <button class="tab-btn active" data-target="panel-generate">
+      <i data-lucide="sliders"></i>
+      <span>Generate</span>
+    </button>
+    <button class="tab-btn" data-target="panel-editor">
+      <i data-lucide="edit-3"></i>
+      <span>Editor</span>
+    </button>
+    <button class="tab-btn" data-target="panel-history">
+      <i data-lucide="history"></i>
+      <span>History</span>
+    </button>
+  </nav>
+
+  <!-- Dashboard Container -->
+  <main class="dashboard">
+    
+    <!-- LEFT PANEL: GENERATION SETTINGS -->
+    <section class="panel panel-left active" id="panel-generate">
+      <div class="panel-section-header">
+        <i data-lucide="sliders-horizontal"></i>
+        <h2>Generator Settings</h2>
+      </div>
+      
+      <div class="panel-scrollable">
+        <!-- Text Prompt -->
+        <div class="control-group">
+          <label for="promptInput">Describe your thumbnail</label>
+          <div class="textarea-wrapper">
+            <textarea id="promptInput" rows="3" placeholder="e.g. A futuristic cyberpunk city with neon billboards, cinematic lighting, 8k resolution..."></textarea>
+            <button class="clear-btn" id="clearPromptBtn" title="Clear prompt" aria-label="Clear prompt">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Presets -->
+        <div class="control-group">
+          <label>Style Presets</label>
+          <div class="presets-grid" id="presetsGrid">
+            <button class="preset-btn active" data-style="none">
+              <span class="preset-emoji">🎨</span> None
+            </button>
+            <button class="preset-btn" data-style="gaming">
+              <span class="preset-emoji">🎮</span> Gaming
+            </button>
+            <button class="preset-btn" data-style="tech">
+              <span class="preset-emoji">💻</span> Tech / Future
+            </button>
+            <button class="preset-btn" data-style="business">
+              <span class="preset-emoji">📈</span> Business
+            </button>
+            <button class="preset-btn" data-style="cyberpunk">
+              <span class="preset-emoji">🌃</span> Cyberpunk
+            </button>
+            <button class="preset-btn" data-style="3d-render">
+              <span class="preset-emoji">💿</span> 3D Render
+            </button>
+            <button class="preset-btn" data-style="vector">
+              <span class="preset-emoji">✏️</span> Minimal Art
+            </button>
+            <button class="preset-btn" data-style="cinematic">
+              <span class="preset-emoji">🎬</span> Cinematic
+            </button>
+          </div>
+        </div>
+
+        <!-- Reference Images -->
+        <div class="control-group">
+          <label>Reference Styles (Colors/Mood)</label>
+          <div class="upload-dropzone" id="dropzone">
+            <i data-lucide="cloud-upload" class="dropzone-icon"></i>
+            <p class="dropzone-title">Drag & drop reference images</p>
+            <p class="dropzone-sub">or click to browse from files</p>
+            <input type="file" id="fileInput" accept="image/*" multiple style="display: none;">
+          </div>
+          
+          <!-- Uploaded References List -->
+          <div class="references-container hidden" id="referencesContainer">
+            <div class="references-header">
+              <span>Uploaded Reference (<span id="refCount">0</span>)</span>
+              <button class="clear-ref-btn" id="clearRefsBtn">Clear</button>
+            </div>
+            <div class="references-gallery" id="referencesGallery"></div>
+            
+            <!-- Color Swatches from Reference -->
+            <div class="palette-container hidden" id="paletteContainer">
+              <span class="palette-title">Extracted Palette:</span>
+              <div class="swatches" id="swatchesGrid"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Aspect Ratio -->
+        <div class="control-group">
+          <label>Aspect Ratio / Resolution</label>
+          <div class="aspect-grid" id="aspectGrid">
+            <button class="aspect-btn active" data-ratio="16:9" data-width="1280" data-height="720">
+              <div class="aspect-box ratio-16-9"></div>
+              <span class="aspect-label">16:9</span>
+              <span class="aspect-res">Landscape</span>
+            </button>
+            <button class="aspect-btn" data-ratio="1:1" data-width="1024" data-height="1024">
+              <div class="aspect-box ratio-1-1"></div>
+              <span class="aspect-label">1:1</span>
+              <span class="aspect-res">Square</span>
+            </button>
+            <button class="aspect-btn" data-ratio="9:16" data-width="720" data-height="1280">
+              <div class="aspect-box ratio-9-16"></div>
+              <span class="aspect-label">9:16</span>
+              <span class="aspect-res">Shorts / Story</span>
+            </button>
+            <button class="aspect-btn" data-ratio="4:5" data-width="800" data-height="1000">
+              <div class="aspect-box ratio-4-5"></div>
+              <span class="aspect-label">4:5</span>
+              <span class="aspect-res">Social</span>
+            </button>
+            <button class="aspect-btn" data-ratio="21:9" data-width="1280" data-height="548">
+              <div class="aspect-box ratio-21-9"></div>
+              <span class="aspect-label">21:9</span>
+              <span class="aspect-res">Ultra-wide</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Seed Control (Advanced) -->
+        <div class="advanced-section">
+          <button class="advanced-toggle-btn" id="advancedToggleBtn">
+            <span>Advanced Settings</span>
+            <i data-lucide="chevron-down" class="toggle-icon"></i>
+          </button>
+          <div class="advanced-content hidden" id="advancedContent">
+            <div class="control-group">
+              <label for="seedInput">Custom Seed (leave empty for random)</label>
+              <div class="seed-input-wrapper">
+                <input type="number" id="seedInput" placeholder="Random seed...">
+                <button class="seed-btn" id="randomSeedBtn" title="Randomize seed">
+                  <i data-lucide="shuffle"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Primary Action Button -->
+        <button class="btn btn-primary btn-generate" id="generateBtn">
+          <i data-lucide="sparkle"></i>
+          <span>Generate Thumbnail</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- MIDDLE PANEL: CANVAS WORKSPACE -->
+    <section class="panel panel-center active" id="panel-editor">
+      <div class="workspace-header">
+        <div class="workspace-title">
+          <i data-lucide="tv"></i>
+          <h2>Studio Canvas</h2>
+        </div>
+        <div class="canvas-actions">
+          <button class="btn btn-secondary" id="regenerateBtn" disabled>
+            <i data-lucide="refresh-cw"></i>
+            <span>Regenerate</span>
+          </button>
+          <button class="btn btn-primary" id="downloadBtn" disabled>
+            <i data-lucide="download"></i>
+            <span>Download PNG</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Canvas Container -->
+      <div class="canvas-outer-wrapper">
+        <div class="canvas-container" id="canvasContainer">
+          <canvas id="thumbnailCanvas" width="1280" height="720"></canvas>
+          
+          <!-- Loading Overlay -->
+          <div class="loading-overlay hidden" id="loadingOverlay">
+            <div class="spinner-container">
+              <div class="glow-spinner"></div>
+              <div class="logo-spinner">
+                <i data-lucide="sparkles"></i>
+              </div>
+            </div>
+            <p class="loading-message" id="loadingMsg">Initializing Canvas...</p>
+            <p class="loading-submessage" id="loadingSubMsg">Fetching resources...</p>
+          </div>
+          
+          <!-- Drag Hint (Appeared over canvas initially) -->
+          <div class="drag-hint" id="dragHint">
+            <i data-lucide="move"></i> Click and drag text on the canvas to reposition it
+          </div>
+
+          <!-- Empty Canvas Placeholder -->
+          <div class="canvas-placeholder" id="canvasPlaceholder">
+            <div class="placeholder-content">
+              <div class="placeholder-graphic">
+                <i data-lucide="image" class="placeholder-icon"></i>
+                <i data-lucide="sparkles" class="placeholder-sparkle"></i>
+              </div>
+              <h3>Your AI Canvas Awaits</h3>
+              <p>Type a prompt on the left, choose a style preset, and click <strong>Generate</strong> to create your professional background thumbnail!</p>
+              <button class="btn btn-secondary" id="placeholderGenBtn">
+                <i data-lucide="zap"></i> Fast-start: Tech Concept
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Canvas Utilities -->
+      <div class="canvas-toolbar" id="canvasToolbar">
+        <!-- Tab Selectors for Canvas Adjustments -->
+        <div class="toolbar-tabs">
+          <button class="toolbar-tab-btn active" data-toolbar="tab-text-overlay">
+            <i data-lucide="type"></i> Text Overlay
+          </button>
+          <button class="toolbar-tab-btn" data-toolbar="tab-adjustments">
+            <i data-lucide="sliders"></i> Image Adjustments
+          </button>
+        </div>
+
+        <div class="toolbar-panels">
+          <!-- Text Layer Controls Panel -->
+          <div class="toolbar-panel active" id="tab-text-overlay">
+            <div class="text-lines-grid">
+              
+              <!-- Text Line 1 -->
+              <div class="text-line-card">
+                <div class="line-header">
+                  <div class="line-title">
+                    <span class="badge badge-1">L1</span>
+                    <span>Primary Heading</span>
+                  </div>
+                  <div class="toggle-switch">
+                    <input type="checkbox" id="line1Enable" checked>
+                    <label for="line1Enable" title="Toggle line 1"></label>
+                  </div>
+                </div>
+                <div class="line-inputs" id="line1Controls">
+                  <input type="text" id="line1Text" value="CRAZY AI TECH" placeholder="Heading text...">
+                  <div class="style-row">
+                    <div class="input-col font-family-col">
+                      <label>Font</label>
+                      <select id="line1Font">
+                        <option value="Impact" selected>Impact (Classic)</option>
+                        <option value="Outfit">Outfit (Modern)</option>
+                        <option value="Montserrat">Montserrat (Bold)</option>
+                        <option value="Bangers">Bangers (Comic)</option>
+                        <option value="Permanent Marker">Marker (Creative)</option>
+                        <option value="Press Start 2P">Retro 8-Bit</option>
+                      </select>
+                    </div>
+                    <div class="input-col flex-grow">
+                      <label>Size</label>
+                      <div class="slider-val-wrapper">
+                        <input type="range" id="line1Size" min="20" max="180" value="90">
+                        <span id="line1SizeVal">90px</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="color-row">
+                    <div class="color-pick-item">
+                      <label>Fill</label>
+                      <div class="color-picker-wrapper">
+                        <input type="color" id="line1Color" value="#ffff00">
+                        <span class="color-hex-label" id="line1ColorHex">#FFFF00</span>
+                      </div>
+                    </div>
+                    <div class="color-pick-item">
+                      <label>Outline</label>
+                      <div class="color-picker-wrapper">
+                        <input type="color" id="line1StrokeColor" value="#000000">
+                        <span class="color-hex-label" id="line1StrokeHex">#000000</span>
+                      </div>
+                    </div>
+                    <div class="input-col outline-width-col">
+                      <label>Stroke Width</label>
+                      <div class="slider-val-wrapper">
+                        <input type="range" id="line1StrokeWidth" min="0" max="25" value="10">
+                        <span id="line1StrokeVal">10px</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="checkbox-options-row">
+                    <label class="checkbox-container">
+                      <input type="checkbox" id="line1Shadow" checked>
+                      <span class="checkmark"></span>
+                      Drop Shadow
+                    </label>
+                    <label class="checkbox-container">
+                      <input type="checkbox" id="line1Uppercase" checked>
+                      <span class="checkmark"></span>
+                      ALL CAPS
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Text Line 2 -->
+              <div class="text-line-card">
+                <div class="line-header">
+                  <div class="line-title">
+                    <span class="badge badge-2">L2</span>
+                    <span>Subheading / CTA</span>
+                  </div>
+                  <div class="toggle-switch">
+                    <input type="checkbox" id="line2Enable" checked>
+                    <label for="line2Enable" title="Toggle line 2"></label>
+                  </div>
+                </div>
+                <div class="line-inputs" id="line2Controls">
+                  <input type="text" id="line2Text" value="IN 5 MINUTES!" placeholder="Subheading text...">
+                  <div class="style-row">
+                    <div class="input-col font-family-col">
+                      <label>Font</label>
+                      <select id="line2Font">
+                        <option value="Impact">Impact (Classic)</option>
+                        <option value="Outfit" selected>Outfit (Modern)</option>
+                        <option value="Montserrat">Montserrat (Bold)</option>
+                        <option value="Bangers">Bangers (Comic)</option>
+                        <option value="Permanent Marker">Marker (Creative)</option>
+                        <option value="Press Start 2P">Retro 8-Bit</option>
+                      </select>
+                    </div>
+                    <div class="input-col flex-grow">
+                      <label>Size</label>
+                      <div class="slider-val-wrapper">
+                        <input type="range" id="line2Size" min="20" max="150" value="55">
+                        <span id="line2SizeVal">55px</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="color-row">
+                    <div class="color-pick-item">
+                      <label>Fill</label>
+                      <div class="color-picker-wrapper">
+                        <input type="color" id="line2Color" value="#ffffff">
+                        <span class="color-hex-label" id="line2ColorHex">#FFFFFF</span>
+                      </div>
+                    </div>
+                    <div class="color-pick-item">
+                      <label>Outline</label>
+                      <div class="color-picker-wrapper">
+                        <input type="color" id="line2StrokeColor" value="#000000">
+                        <span class="color-hex-label" id="line2StrokeHex">#000000</span>
+                      </div>
+                    </div>
+                    <div class="input-col outline-width-col">
+                      <label>Stroke Width</label>
+                      <div class="slider-val-wrapper">
+                        <input type="range" id="line2StrokeWidth" min="0" max="25" value="6">
+                        <span id="line2StrokeVal">6px</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="checkbox-options-row">
+                    <label class="checkbox-container">
+                      <input type="checkbox" id="line2Shadow" checked>
+                      <span class="checkmark"></span>
+                      Drop Shadow
+                    </label>
+                    <label class="checkbox-container">
+                      <input type="checkbox" id="line2Uppercase" checked>
+                      <span class="checkmark"></span>
+                      ALL CAPS
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Adjustments Panel -->
+          <div class="toolbar-panel" id="tab-adjustments">
+            <div class="adjustments-grid">
+              
+              <!-- Filter Adjusters -->
+              <div class="adjustment-card">
+                <h3>Image Filters</h3>
+                <div class="sliders-container">
+                  <div class="slider-group">
+                    <div class="slider-header">
+                      <label for="filterBrightness">Brightness</label>
+                      <span id="filterBrightnessVal">100%</span>
+                    </div>
+                    <input type="range" id="filterBrightness" min="50" max="150" value="100">
+                  </div>
+                  
+                  <div class="slider-group">
+                    <div class="slider-header">
+                      <label for="filterContrast">Contrast</label>
+                      <span id="filterContrastVal">100%</span>
+                    </div>
+                    <input type="range" id="filterContrast" min="50" max="200" value="100">
+                  </div>
+
+                  <div class="slider-group">
+                    <div class="slider-header">
+                      <label for="filterSaturation">Saturation</label>
+                      <span id="filterSaturationVal">100%</span>
+                    </div>
+                    <input type="range" id="filterSaturation" min="0" max="200" value="100">
+                  </div>
+                  
+                  <button class="btn btn-secondary btn-small reset-filters-btn" id="resetFiltersBtn">
+                    <i data-lucide="rotate-ccw"></i> Reset Filters
+                  </button>
+                </div>
+              </div>
+
+              <!-- Extra overlays / Graphics customization -->
+              <div class="adjustment-card">
+                <h3>Overlay Settings</h3>
+                <div class="overlay-toggles-container">
+                  <label class="checkbox-container">
+                    <input type="checkbox" id="overlayVignette">
+                    <span class="checkmark"></span>
+                    Dark Vignette (Dramatic edges)
+                  </label>
+                  <label class="checkbox-container">
+                    <input type="checkbox" id="overlayGlow">
+                    <span class="checkmark"></span>
+                    Cyberpunk Color Border
+                  </label>
+                  <label class="checkbox-container">
+                    <input type="checkbox" id="overlayScanlines">
+                    <span class="checkmark"></span>
+                    Retro Scanlines Grid
+                  </label>
+                  
+                  <!-- Blending Reference Image -->
+                  <div class="ref-blend-container hidden" id="refBlendOptions">
+                    <hr class="divider">
+                    <label class="checkbox-container">
+                      <input type="checkbox" id="enableRefOverlay">
+                      <span class="checkmark"></span>
+                      Overlay Reference Image
+                    </label>
+                    <div class="slider-group disabled" id="refOpacityGroup">
+                      <div class="slider-header">
+                        <label for="refOverlayOpacity">Ref Position & Size</label>
+                      </div>
+                      <div class="ref-layout-options">
+                        <button class="ref-pos-btn active" data-pos="bottom-right">BR</button>
+                        <button class="ref-pos-btn" data-pos="bottom-left">BL</button>
+                        <button class="ref-pos-btn" data-pos="top-right">TR</button>
+                        <button class="ref-pos-btn" data-pos="top-left">TL</button>
+                        <button class="ref-pos-btn" data-pos="center">Center</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT PANEL: PROMPT HISTORY -->
+    <section class="panel panel-right" id="panel-history">
+      <div class="panel-section-header">
+        <i data-lucide="history"></i>
+        <h2>Prompt History</h2>
+        <button class="clear-history-btn hidden" id="clearHistoryBtn">Clear All</button>
+      </div>
+
+      <!-- History List -->
+      <div class="history-list-container">
+        <div class="history-empty" id="historyEmpty">
+          <div class="history-empty-graphic">
+            <i data-lucide="archive"></i>
+          </div>
+          <h3>No History Yet</h3>
+          <p>Generated thumbnails will be saved here so you can easily reload or compare them later.</p>
+        </div>
+        <div class="history-list hidden" id="historyList"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
